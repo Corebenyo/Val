@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>A Special Message for You</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Quicksand', sans-serif;
+    background: linear-gradient(135deg, #ffe6e6 0%, #fff0f5 50%, #ffe6ee 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: #5c2434;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .screen.active { display: flex; }
+
+  /* ===== FLOATING HEARTS BACKGROUND ===== */
+  .hearts-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .hearts-bg .heart {
+    position: absolute;
+    font-size: 20px;
+    opacity: 0;
+    animation: floatHeart linear infinite;
+  }
+  @keyframes floatHeart {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.6; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ===== SCREEN 1: ENVELOPE ===== */
+  .envelope-wrapper {
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+  }
+  .envelope {
+    width: 260px;
+    height: 180px;
+    background: linear-gradient(145deg, #f5e6d3, #eddcc8);
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(92, 36, 52, 0.15);
+    transition: transform 0.3s ease;
+  }
+  .envelope:active { transform: scale(0.97); }
+  .envelope-flap {
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 92px;
+    background: linear-gradient(145deg, #eddcc8, #e5d2bc);
+    clip-path: polygon(0 0, 50% 70%, 100% 0);
+    z-index: 2;
+    transform-origin: top center;
+    transition: transform 0.8s ease;
+    border-radius: 8px 8px 0 0;
+  }
+  .envelope-flap.open {
+    transform: rotateX(180deg);
+  }
+  .envelope-heart {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    z-index: 1;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.15); }
+  }
+  .envelope-shadow {
+    position: absolute;
+    bottom: -10px; left: 10%;
+    width: 80%; height: 10px;
+    background: radial-gradient(ellipse, rgba(92,36,52,0.1) 0%, transparent 70%);
+  }
+  .envelope-text {
+    font-family: 'Dancing Script', cursive;
+    font-size: 24px;
+    margin-top: 32px;
+    opacity: 0;
+    animation: fadeInUp 1s ease 0.5s forwards;
+    color: #9b4d6a;
+  }
+  .tap-hint {
+    font-size: 14px;
+    margin-top: 16px;
+    opacity: 0;
+    animation: fadeInUp 1s ease 1.2s forwards;
+    color: #c4879e;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Letter sliding out */
+  .letter-peek {
+    position: absolute;
+    top: 30px; left: 50%;
+    transform: translateX(-50%) translateY(0);
+    width: 220px; height: 140px;
+    background: white;
+    border-radius: 4px;
+    z-index: 1;
+    transition: transform 1s ease 0.4s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .letter-peek .mini-heart { font-size: 24px; color: #e74c6f; }
+  .letter-peek.slide-up {
+    transform: translateX(-50%) translateY(-180px);
+  }
+
+  /* ===== SCREEN 2: LOVE LETTER ===== */
+  .letter-card {
+    background: #fffaf5;
+    border-radius: 16px;
+    padding: 32px 24px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 4px 24px rgba(92, 36, 52, 0.1);
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeInScale 0.8s ease forwards;
+    border: 1px solid #f5e0d0;
+  }
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .letter-card h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 28px;
+    color: #e74c6f;
+    margin-bottom: 20px;
+  }
+  .letter-card p {
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 14px;
+    color: #6b3a4a;
+  }
+  .letter-card .sign-off {
+    font-family: 'Dancing Script', cursive;
+    font-size: 32px;
+    color: #e74c6f;
+    margin-top: 20px;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #e74c6f, #d4456a);
+    color: white;
+    box-shadow: 0 4px 16px rgba(231, 76, 111, 0.35);
+    margin-top: 24px;
+  }
+  .btn-primary:hover, .btn-primary:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 111, 0.45);
+  }
+
+  /* ===== SCREEN 3: QUIZ ===== */
+  .quiz-container {
+    max-width: 380px;
+    width: 100%;
+    z-index: 1;
+  }
+  .quiz-progress {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .quiz-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #f0c4d4;
+    transition: all 0.3s ease;
+  }
+  .quiz-dot.active { background: #e74c6f; transform: scale(1.3); }
+  .quiz-dot.done { background: #d4a574; }
+  .quiz-question {
+    font-family: 'Dancing Script', cursive;
+    font-size: 26px;
+    color: #e74c6f;
+    margin-bottom: 24px;
+    min-height: 70px;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+  }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .quiz-opt {
+    padding: 14px 20px;
+    border: 2px solid #f0c4d4;
+    border-radius: 14px;
+    background: white;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #5c2434;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .quiz-opt:hover, .quiz-opt:active {
+    border-color: #e74c6f;
+    background: #fff5f7;
+  }
+  .quiz-opt.selected {
+    border-color: #e74c6f;
+    background: #ffe8ee;
+    transform: scale(0.97);
+  }
+  .quiz-answer {
+    display: none;
+    padding: 20px;
+    background: linear-gradient(135deg, #fff5f7, #fff0f2);
+    border-radius: 16px;
+    border: 2px solid #f0c4d4;
+    margin-top: 12px;
+    animation: fadeInScale 0.5s ease forwards;
+  }
+  .quiz-answer.show { display: block; }
+  .quiz-answer p {
+    font-family: 'Dancing Script', cursive;
+    font-size: 22px;
+    color: #e74c6f;
+    line-height: 1.4;
+  }
+  .quiz-next {
+    margin-top: 20px;
+  }
+
+  /* ===== SCREEN 4: BIG ASK ===== */
+  .ask-title {
+    font-family: 'Dancing Script', cursive;
+    font-size: 32px;
+    color: #e74c6f;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards;
+    z-index: 1;
+  }
+  .ask-question {
+    font-family: 'Dancing Script', cursive;
+    font-size: 36px;
+    color: #d4456a;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease 0.3s forwards;
+    z-index: 1;
+    line-height: 1.3;
+  }
+  .ask-buttons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease 0.6s forwards;
+  }
+  .btn-yes {
+    padding: 16px 48px;
+    background: linear-gradient(135deg, #e74c6f, #c23152);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(231, 76, 111, 0.4);
+    transition: all 0.3s ease;
+    z-index: 10;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-yes:hover, .btn-yes:active {
+    transform: scale(1.05);
+    box-shadow: 0 6px 28px rgba(231, 76, 111, 0.55);
+  }
+  .btn-no {
+    padding: 12px 32px;
+    background: #f0c4d4;
+    color: #8a4a5e;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Countdown */
+  .countdown-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+    z-index: 1;
+  }
+  .countdown-container.show { display: flex; }
+  .countdown-text {
+    font-size: 16px;
+    color: #9b4d6a;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .countdown-number {
+    font-family: 'Dancing Script', cursive;
+    font-size: 72px;
+    color: #e74c6f;
+    font-weight: 700;
+    animation: countdownPulse 1s ease-in-out infinite;
+  }
+  @keyframes countdownPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  /* ===== SCREEN 5: CELEBRATION ===== */
+  #screen5 {
+    background: linear-gradient(135deg, #ffe6e6, #fff0f5);
+  }
+  .celebration-text {
+    font-family: 'Dancing Script', cursive;
+    font-size: 40px;
+    color: #e74c6f;
+    z-index: 2;
+    opacity: 0;
+    animation: celebrationPop 0.8s ease forwards;
+    text-shadow: 0 2px 8px rgba(231, 76, 111, 0.2);
+  }
+  @keyframes celebrationPop {
+    0% { opacity: 0; transform: scale(0.3); }
+    60% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .celebration-sub {
+    font-family: 'Dancing Script', cursive;
+    font-size: 22px;
+    color: #d4a574;
+    margin-top: 10px;
+    z-index: 2;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease 0.4s forwards;
+  }
+  .celebration-gif {
+    width: 240px;
+    height: auto;
+    border-radius: 16px;
+    margin-top: 24px;
+    z-index: 2;
+    opacity: 0;
+    animation: fadeInScale 0.8s ease 0.6s forwards;
+    box-shadow: 0 4px 20px rgba(92, 36, 52, 0.15);
+  }
+  .celebration-distance {
+    font-family: 'Dancing Script', cursive;
+    font-size: 20px;
+    color: #9b4d6a;
+    margin-top: 24px;
+    z-index: 2;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease 1s forwards;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+  .music-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #f0c4d4;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(92, 36, 52, 0.1);
+    -webkit-tap-highlight-color: transparent;
+    display: none;
+  }
+  .music-toggle.show { display: flex; }
+
+  /* ===== CONFETTI ===== */
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+  }
+
+  /* ===== CELEBRATION HEARTS RAIN ===== */
+  .hearts-rain {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 49;
+    overflow: hidden;
+  }
+  .rain-heart {
+    position: absolute;
+    top: -30px;
+    font-size: 24px;
+    animation: heartRain linear forwards;
+  }
+  @keyframes heartRain {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(360deg) scale(0.5); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating Hearts Background -->
+<div class="hearts-bg" id="heartsBg"></div>
+
+<!-- Music Toggle -->
+<button class="music-toggle" id="musicToggle" onclick="toggleMusic()">🔇</button>
+
+<!-- ===== SCREEN 1: ENVELOPE ===== -->
+<div class="screen active" id="screen1">
+  <div class="envelope-wrapper" onclick="openEnvelope()">
+    <div class="envelope">
+      <div class="envelope-flap" id="envelopeFlap"></div>
+      <div class="envelope-heart">💌</div>
+      <div class="letter-peek" id="letterPeek">
+        <span class="mini-heart">❤️</span>
+      </div>
+    </div>
+    <div class="envelope-shadow"></div>
+  </div>
+  <p class="envelope-text">You've got a letter...</p>
+  <p class="tap-hint">tap to open</p>
+</div>
+
+<!-- ===== SCREEN 2: LOVE LETTER ===== -->
+<div class="screen" id="screen2">
+  <div class="letter-card">
+    <h2>Dear Yoyo,</h2>
+    <p>I know you probably weren't expecting this, but some things are too important to leave unsaid.</p>
+    <p>Every moment with you feels like the best part of my day. Your laugh, your smile, the way you make everything brighter just by being you.</p>
+    <p>So I have a few questions for you... and then one very important one at the end.</p>
+    <p class="sign-off">❤️</p>
+  </div>
+  <button class="btn btn-primary" onclick="goToScreen('screen3'); startQuiz();">I'm ready...</button>
+</div>
+
+<!-- ===== SCREEN 3: QUIZ ===== -->
+<div class="screen" id="screen3">
+  <div class="quiz-container">
+    <div class="quiz-progress" id="quizProgress"></div>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-answer" id="quizAnswer">
+      <p id="quizAnswerText"></p>
+    </div>
+    <button class="btn btn-primary quiz-next" id="quizNext" style="display:none;" onclick="nextQuestion()">Next</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 4: BIG ASK ===== -->
+<div class="screen" id="screen4">
+  <p class="ask-title">Yoyo...</p>
+  <p class="ask-question">Will You Be My Valentine? 💕</p>
+  <div class="ask-buttons" id="askButtons">
+    <button class="btn-yes" id="btnYes" onclick="sayYes()">YES! 💖</button>
+    <button class="btn-no" id="btnNo" onclick="sayNo()">no</button>
+  </div>
+  <div class="countdown-container" id="countdown">
+    <p class="countdown-text">You have <span id="countdownLabel">10</span> seconds before it's an automatic YES!</p>
+    <span class="countdown-number" id="countdownNumber">10</span>
+  </div>
+</div>
+
+<!-- ===== SCREEN 5: CELEBRATION ===== -->
+<div class="screen" id="screen5">
+  <div class="confetti-container" id="confettiContainer"></div>
+  <div class="hearts-rain" id="heartsRain"></div>
+  <h1 class="celebration-text">SHE SAID YES! 🎉</h1>
+  <p class="celebration-sub">I knew you'd make the right choice 😏❤️</p>
+  <img class="celebration-gif"
+       src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDd6OGFtY2V0Y3BkdGRiZjB6cjhiNGxsZmJoY3F5eDR4dTVmNiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/M90mJvfWfd5mbUuULX/giphy.gif"
+       alt="Love GIF"
+       onerror="this.style.display='none'">
+  <p class="celebration-distance">And even with the distance between us, I only love you more, can't wait for you to return to my arms</p>
+</div>
+
+<script>
+  // ===== FLOATING HEARTS BACKGROUND =====
+  function createFloatingHearts() {
+    const container = document.getElementById('heartsBg');
+    const hearts = ['❤️', '💕', '💗', '💖', '🩷', '♥️'];
+    for (let i = 0; i < 15; i++) {
+      const heart = document.createElement('span');
+      heart.className = 'heart';
+      heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.fontSize = (14 + Math.random() * 18) + 'px';
+      heart.style.animationDuration = (8 + Math.random() * 12) + 's';
+      heart.style.animationDelay = (Math.random() * 10) + 's';
+      container.appendChild(heart);
+    }
+  }
+  createFloatingHearts();
+
+  // ===== SCREEN NAVIGATION =====
+  function goToScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ===== SCREEN 1: ENVELOPE =====
+  let envelopeOpened = false;
+  function openEnvelope() {
+    if (envelopeOpened) return;
+    envelopeOpened = true;
+    document.getElementById('envelopeFlap').classList.add('open');
+    document.getElementById('letterPeek').classList.add('slide-up');
+    setTimeout(() => goToScreen('screen2'), 1400);
+  }
+
+  // ===== SCREEN 3: QUIZ =====
+  const quizData = [
+    {
+      question: "Where did I first fall for you?",
+      options: ["Our first date", "The cinema", "That long walk together"],
+      answer: "Trick question — I'm still falling for you every day 💫"
+    },
+    {
+      question: "How much do I love you?",
+      options: ["A million", "To the moon and back 🌙", "More than food 🍕"],
+      answer: "Too much to fit in any answer... but I'll spend forever trying to show you 💕"
+    },
+    {
+      question: "What's my favourite thing about you?",
+      options: ["Your peach 🍑", "Your eyes 👀", "Your smile 😊", "How cute you are"],
+      answer: "Wrong — it's ALL of you ❤️"
+    },
+    {
+      question: "The most important question in our relationship is...",
+      options: ["Rice 🍚", "Noodles 🍜"],
+      answer: "The REAL most important question is coming up next... 👀",
+      isLast: true
+    }
+  ];
+
+  let currentQ = 0;
+
+  function startQuiz() {
+    currentQ = 0;
+    renderProgress();
+    showQuestion();
+  }
+
+  function renderProgress() {
+    const container = document.getElementById('quizProgress');
+    container.innerHTML = '';
+    quizData.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'quiz-dot' + (i === currentQ ? ' active' : '') + (i < currentQ ? ' done' : '');
+      container.appendChild(dot);
+    });
+  }
+
+  function showQuestion() {
+    const q = quizData[currentQ];
+    const questionEl = document.getElementById('quizQuestion');
+    const optionsEl = document.getElementById('quizOptions');
+    const answerEl = document.getElementById('quizAnswer');
+    const nextBtn = document.getElementById('quizNext');
+
+    // Reset
+    questionEl.style.animation = 'none';
+    questionEl.offsetHeight; // trigger reflow
+    questionEl.style.animation = 'fadeInUp 0.6s ease forwards';
+    questionEl.textContent = q.question;
+    optionsEl.innerHTML = '';
+    answerEl.classList.remove('show');
+    nextBtn.style.display = 'none';
+
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = opt;
+      btn.onclick = () => selectAnswer(btn);
+      // stagger animation
+      btn.style.opacity = '0';
+      btn.style.animation = `fadeInUp 0.4s ease ${0.1 + i * 0.1}s forwards`;
+      optionsEl.appendChild(btn);
+    });
+
+    renderProgress();
+  }
+
+  function selectAnswer(btn) {
+    // Prevent double-tap
+    if (document.getElementById('quizAnswer').classList.contains('show')) return;
+
+    // Highlight all as selected briefly
+    document.querySelectorAll('.quiz-opt').forEach(b => {
+      b.classList.add('selected');
+      b.style.pointerEvents = 'none';
+    });
+
+    const q = quizData[currentQ];
+    document.getElementById('quizAnswerText').textContent = q.answer;
+    document.getElementById('quizAnswer').classList.add('show');
+
+    if (q.isLast) {
+      document.getElementById('quizNext').textContent = "Show me! 👀";
+    } else {
+      document.getElementById('quizNext').textContent = "Next ➜";
+    }
+    document.getElementById('quizNext').style.display = 'inline-block';
+  }
+
+  function nextQuestion() {
+    const q = quizData[currentQ];
+    if (q.isLast) {
+      goToScreen('screen4');
+      startAskTimer();
+      return;
+    }
+    currentQ++;
+    showQuestion();
+  }
+
+  // ===== SCREEN 4: BIG ASK =====
+  let noCount = 0;
+  let askTimer = null;
+  let countdownVal = 10;
+  let countdownInterval = null;
+
+  const noTexts = ["no", "Are you sure?", "Really really sure?", "Think again! 🥺", "Wrong button!", "Pretty please?", "I'll be sad 😢", "Last chance..."];
+
+  function startAskTimer() {
+    noCount = 0;
+    countdownVal = 10;
+    // Start countdown after 15 seconds of inactivity
+    askTimer = setTimeout(() => {
+      document.getElementById('countdown').classList.add('show');
+      countdownInterval = setInterval(() => {
+        countdownVal--;
+        document.getElementById('countdownNumber').textContent = countdownVal;
+        document.getElementById('countdownLabel').textContent = countdownVal;
+        if (countdownVal <= 0) {
+          clearInterval(countdownInterval);
+          sayYes();
+        }
+      }, 1000);
+    }, 15000);
+  }
+
+  function sayNo() {
+    noCount++;
+    const btnNo = document.getElementById('btnNo');
+    const btnYes = document.getElementById('btnYes');
+
+    // Grow yes button a little each time
+    const yesScale = 1 + noCount * 0.1;
+    btnYes.style.transform = `scale(${Math.min(yesScale, 1.5)})`;
+
+    // Change text as it shrinks
+    btnNo.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
+
+    // Shrink over 5 clicks then disappear
+    if (noCount >= 5) {
+      btnNo.style.transform = 'scale(0)';
+      btnNo.style.opacity = '0';
+      btnNo.style.pointerEvents = 'none';
+    } else {
+      const shrink = 1 - noCount * 0.18;
+      btnNo.style.transform = `scale(${shrink})`;
+      btnNo.style.opacity = `${shrink}`;
+    }
+
+    // Reset countdown timer on interaction
+    if (askTimer) { clearTimeout(askTimer); }
+    if (countdownInterval) { clearInterval(countdownInterval); }
+    document.getElementById('countdown').classList.remove('show');
+    countdownVal = 10;
+    document.getElementById('countdownNumber').textContent = '10';
+    document.getElementById('countdownLabel').textContent = '10';
+    askTimer = setTimeout(() => {
+      document.getElementById('countdown').classList.add('show');
+      countdownInterval = setInterval(() => {
+        countdownVal--;
+        document.getElementById('countdownNumber').textContent = countdownVal;
+        document.getElementById('countdownLabel').textContent = countdownVal;
+        if (countdownVal <= 0) {
+          clearInterval(countdownInterval);
+          sayYes();
+        }
+      }, 1000);
+    }, 8000);
+  }
+
+  function sayYes() {
+    if (askTimer) clearTimeout(askTimer);
+    if (countdownInterval) clearInterval(countdownInterval);
+    goToScreen('screen5');
+    launchConfetti();
+    launchHeartsRain();
+    startMusic();
+    document.getElementById('musicToggle').classList.add('show');
+  }
+
+  // ===== CONFETTI =====
+  function launchConfetti() {
+    const container = document.getElementById('confettiContainer');
+    const colors = ['#e74c6f', '#d4a574', '#f0c4d4', '#ff6b8a', '#ffb6c1', '#ffd700', '#ff69b4'];
+    for (let i = 0; i < 80; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.width = (6 + Math.random() * 8) + 'px';
+      piece.style.height = (6 + Math.random() * 8) + 'px';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+      piece.style.animationDelay = Math.random() * 2 + 's';
+      container.appendChild(piece);
+    }
+    // Second wave
+    setTimeout(() => {
+      for (let i = 0; i < 40; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+        piece.style.animationDelay = Math.random() * 1 + 's';
+        container.appendChild(piece);
+      }
+    }, 2000);
+  }
+
+  // ===== HEARTS RAIN =====
+  function launchHeartsRain() {
+    const container = document.getElementById('heartsRain');
+    const hearts = ['❤️', '💕', '💗', '💖', '💘', '💝'];
+    function spawnHeart() {
+      const heart = document.createElement('span');
+      heart.className = 'rain-heart';
+      heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.fontSize = (16 + Math.random() * 24) + 'px';
+      heart.style.animationDuration = (3 + Math.random() * 4) + 's';
+      container.appendChild(heart);
+      heart.addEventListener('animationend', () => heart.remove());
+    }
+    // Initial burst
+    for (let i = 0; i < 20; i++) {
+      setTimeout(spawnHeart, i * 100);
+    }
+    // Continuous
+    setInterval(spawnHeart, 400);
+  }
+
+  // ===== MUSIC (Web Audio API - simple romantic melody) =====
+  let audioCtx = null;
+  let musicPlaying = false;
+  let musicInterval = null;
+
+  function startMusic() {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      musicPlaying = true;
+      document.getElementById('musicToggle').textContent = '🔊';
+      playMelody();
+    } catch(e) {
+      // Audio not supported
+    }
+  }
+
+  function playMelody() {
+    if (!audioCtx || !musicPlaying) return;
+
+    // A simple romantic melody in C major
+    const notes = [
+      { freq: 523.25, dur: 0.5 },  // C5
+      { freq: 659.25, dur: 0.5 },  // E5
+      { freq: 783.99, dur: 0.75 }, // G5
+      { freq: 659.25, dur: 0.25 }, // E5
+      { freq: 698.46, dur: 0.5 },  // F5
+      { freq: 659.25, dur: 0.5 },  // E5
+      { freq: 523.25, dur: 0.75 }, // C5
+      { freq: 0, dur: 0.25 },      // rest
+      { freq: 493.88, dur: 0.5 },  // B4
+      { freq: 523.25, dur: 0.5 },  // C5
+      { freq: 587.33, dur: 0.5 },  // D5
+      { freq: 523.25, dur: 0.75 }, // C5
+      { freq: 440.00, dur: 0.5 },  // A4
+      { freq: 392.00, dur: 0.75 }, // G4
+      { freq: 0, dur: 0.5 },       // rest
+    ];
+
+    let time = audioCtx.currentTime + 0.1;
+    notes.forEach(note => {
+      if (note.freq > 0) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = note.freq;
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.12, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0.08, time + note.dur * 0.6);
+        gain.gain.linearRampToValueAtTime(0, time + note.dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(time);
+        osc.stop(time + note.dur);
+      }
+      time += note.dur;
+    });
+
+    // Loop
+    const totalDur = notes.reduce((sum, n) => sum + n.dur, 0);
+    musicInterval = setTimeout(() => {
+      if (musicPlaying) playMelody();
+    }, totalDur * 1000 + 500);
+  }
+
+  function toggleMusic() {
+    if (musicPlaying) {
+      musicPlaying = false;
+      if (musicInterval) clearTimeout(musicInterval);
+      if (audioCtx) audioCtx.close().catch(() => {});
+      audioCtx = null;
+      document.getElementById('musicToggle').textContent = '🔇';
+    } else {
+      startMusic();
+    }
+  }
+</script>
+</body>
+</html>
