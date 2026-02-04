@@ -709,6 +709,20 @@
   function startAskTimer() {
     noCount = 0;
     countdownVal = 10;
+
+    // Reset the no button to initial state
+    const btnNo = document.getElementById('btnNo');
+    btnNo.style.position = 'relative';
+    btnNo.style.left = 'auto';
+    btnNo.style.top = 'auto';
+    btnNo.style.transform = 'scale(1)';
+    btnNo.style.opacity = '1';
+    btnNo.style.pointerEvents = 'auto';
+    btnNo.textContent = 'no';
+
+    // Reset yes button
+    document.getElementById('btnYes').style.transform = 'scale(1)';
+
     // Start countdown after 15 seconds of inactivity
     askTimer = setTimeout(() => {
       document.getElementById('countdown').classList.add('show');
@@ -753,8 +767,9 @@
       btnNo.style.left = randomX + 'vw';
       btnNo.style.top = randomY + 'vh';
       btnNo.style.transform = `translate(-50%, -50%) scale(${shrink})`;
-      btnNo.style.opacity = `${shrink}`;
+      btnNo.style.opacity = '1';
       btnNo.style.transition = 'all 0.3s ease';
+      btnNo.style.zIndex = '9999';
     }
 
     // Reset countdown timer on interaction
