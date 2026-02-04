@@ -757,14 +757,19 @@
     } else {
       const shrink = 1 - noCount * 0.18;
 
-      // Random position: 20-80% of viewport, centered with translate
-      const randomX = 20 + Math.random() * 60; // percentage
-      const randomY = 30 + Math.random() * 40; // percentage
+      // Random position using actual pixel values within viewport bounds
+      const viewW = window.innerWidth;
+      const viewH = window.innerHeight;
+
+      // Stay within 10-80% horizontally, 25-55% vertically
+      const randomX = Math.floor(viewW * 0.1 + Math.random() * viewW * 0.7);
+      const randomY = Math.floor(viewH * 0.25 + Math.random() * viewH * 0.3);
 
       btnNo.style.position = 'fixed';
-      btnNo.style.left = randomX + '%';
-      btnNo.style.top = randomY + '%';
-      btnNo.style.transform = `translate(-50%, -50%) scale(${shrink})`;
+      btnNo.style.left = randomX + 'px';
+      btnNo.style.top = randomY + 'px';
+      btnNo.style.transform = `scale(${shrink})`;
+      btnNo.style.transformOrigin = 'top left';
       btnNo.style.opacity = '1';
       btnNo.style.transition = 'left 0.3s ease, top 0.3s ease, transform 0.3s ease';
       btnNo.style.zIndex = '9999';
