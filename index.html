@@ -758,15 +758,26 @@
     } else {
       const shrink = 1 - noCount * 0.18;
 
-      // Move to random position (using viewport units for iPhone Pro compatibility)
-      // Keep button within safe area: 10% to 80% of viewport
-      const randomX = 10 + Math.random() * 70; // 10vw to 80vw
-      const randomY = 20 + Math.random() * 60; // 20vh to 80vh
+      // Move to random position within visible screen area
+      // Use pixel calculation based on actual viewport to stay in bounds
+      const viewW = window.innerWidth;
+      const viewH = window.innerHeight;
+      const btnW = 120; // approximate button width
+      const btnH = 50;  // approximate button height
+
+      // Keep within 15% to 85% of screen, avoiding edges
+      const minX = viewW * 0.15;
+      const maxX = viewW * 0.85 - btnW;
+      const minY = viewH * 0.25;
+      const maxY = viewH * 0.65 - btnH;
+
+      const randomX = minX + Math.random() * (maxX - minX);
+      const randomY = minY + Math.random() * (maxY - minY);
 
       btnNo.style.position = 'fixed';
-      btnNo.style.left = randomX + 'vw';
-      btnNo.style.top = randomY + 'vh';
-      btnNo.style.transform = `translate(-50%, -50%) scale(${shrink})`;
+      btnNo.style.left = randomX + 'px';
+      btnNo.style.top = randomY + 'px';
+      btnNo.style.transform = `scale(${shrink})`;
       btnNo.style.opacity = '1';
       btnNo.style.transition = 'all 0.3s ease';
       btnNo.style.zIndex = '9999';
@@ -858,79 +869,38 @@
     setInterval(spawnHeart, 400);
   }
 
-  // ===== MUSIC (Web Audio API - simple romantic melody) =====
-  let audioCtx = null;
+  // ===== MUSIC (MP3 file) =====
+  let audioElement = null;
   let musicPlaying = false;
-  let musicInterval = null;
 
   function startMusic() {
     try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioElement = new Audio('./song.mp3');
+      audioElement.loop = true;
+      audioElement.volume = 0.5;
+      audioElement.play();
       musicPlaying = true;
       document.getElementById('musicToggle').textContent = '🔊';
-      playMelody();
     } catch(e) {
       // Audio not supported
     }
   }
 
-  function playMelody() {
-    if (!audioCtx || !musicPlaying) return;
-
-    // A simple romantic melody in C major
-    const notes = [
-      { freq: 523.25, dur: 0.5 },  // C5
-      { freq: 659.25, dur: 0.5 },  // E5
-      { freq: 783.99, dur: 0.75 }, // G5
-      { freq: 659.25, dur: 0.25 }, // E5
-      { freq: 698.46, dur: 0.5 },  // F5
-      { freq: 659.25, dur: 0.5 },  // E5
-      { freq: 523.25, dur: 0.75 }, // C5
-      { freq: 0, dur: 0.25 },      // rest
-      { freq: 493.88, dur: 0.5 },  // B4
-      { freq: 523.25, dur: 0.5 },  // C5
-      { freq: 587.33, dur: 0.5 },  // D5
-      { freq: 523.25, dur: 0.75 }, // C5
-      { freq: 440.00, dur: 0.5 },  // A4
-      { freq: 392.00, dur: 0.75 }, // G4
-      { freq: 0, dur: 0.5 },       // rest
-    ];
-
-    let time = audioCtx.currentTime + 0.1;
-    notes.forEach(note => {
-      if (note.freq > 0) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = note.freq;
-        gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.12, time + 0.05);
-        gain.gain.linearRampToValueAtTime(0.08, time + note.dur * 0.6);
-        gain.gain.linearRampToValueAtTime(0, time + note.dur);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(time);
-        osc.stop(time + note.dur);
-      }
-      time += note.dur;
-    });
-
-    // Loop
-    const totalDur = notes.reduce((sum, n) => sum + n.dur, 0);
-    musicInterval = setTimeout(() => {
-      if (musicPlaying) playMelody();
-    }, totalDur * 1000 + 500);
-  }
-
   function toggleMusic() {
     if (musicPlaying) {
       musicPlaying = false;
-      if (musicInterval) clearTimeout(musicInterval);
-      if (audioCtx) audioCtx.close().catch(() => {});
-      audioCtx = null;
+      if (audioElement) {
+        audioElement.pause();
+      }
       document.getElementById('musicToggle').textContent = '🔇';
     } else {
-      startMusic();
+      if (audioElement) {
+        audioElement.play();
+        musicPlaying = true;
+        document.getElementById('musicToggle').textContent = '🔊';
+      } else {
+        startMusic();
+      }
     }
   }
 </script>
