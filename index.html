@@ -757,21 +757,17 @@
     } else {
       const shrink = 1 - noCount * 0.18;
 
-      // Random position using actual pixel values within viewport bounds
-      const viewW = window.innerWidth;
-      const viewH = window.innerHeight;
+      // Random offset from original position using relative positioning
+      // Move within -150px to +150px horizontally and -200px to +100px vertically
+      const randomX = Math.floor(-150 + Math.random() * 300);
+      const randomY = Math.floor(-200 + Math.random() * 300);
 
-      // Stay within 5-70% horizontally, 20-50% vertically (upper half of screen)
-      const randomX = Math.floor(viewW * 0.05 + Math.random() * viewW * 0.65);
-      const randomY = Math.floor(viewH * 0.20 + Math.random() * viewH * 0.30);
-
-      btnNo.style.position = 'fixed';
+      btnNo.style.position = 'relative';
       btnNo.style.left = randomX + 'px';
       btnNo.style.top = randomY + 'px';
       btnNo.style.transform = `scale(${shrink})`;
-      btnNo.style.transformOrigin = 'top left';
       btnNo.style.opacity = '1';
-      btnNo.style.transition = 'left 0.3s ease, top 0.3s ease, transform 0.3s ease';
+      btnNo.style.transition = 'all 0.3s ease';
       btnNo.style.zIndex = '9999';
     }
 
