@@ -340,10 +340,6 @@
     z-index: 10;
     -webkit-tap-highlight-color: transparent;
   }
-  .btn-no-floating {
-    position: absolute;
-    z-index: 100;
-  }
 
   /* Countdown */
   .countdown-container {
@@ -541,7 +537,6 @@
     <button class="btn-yes" id="btnYes" onclick="sayYes()">YES! 💖</button>
     <button class="btn-no" id="btnNo" onclick="sayNo()">no</button>
   </div>
-  <button class="btn-no btn-no-floating" id="btnNoFloating" onclick="sayNo()" style="display:none;">no</button>
   <div class="countdown-container" id="countdown">
     <p class="countdown-text">You have <span id="countdownLabel">10</span> seconds before it's an automatic YES!</p>
     <span class="countdown-number" id="countdownNumber">10</span>
@@ -745,36 +740,23 @@
   function sayNo() {
     noCount++;
     const btnNo = document.getElementById('btnNo');
-    const btnNoFloat = document.getElementById('btnNoFloating');
     const btnYes = document.getElementById('btnYes');
 
-    // Grow yes button a little each time
-    const yesScale = 1 + noCount * 0.1;
-    btnYes.style.transform = `scale(${Math.min(yesScale, 1.5)})`;
-
-    // Hide original button, show floating one
-    btnNo.style.display = 'none';
-    btnNoFloat.style.display = 'block';
+    // Grow yes button each time
+    const yesScale = 1 + noCount * 0.15;
+    btnYes.style.transform = `scale(${Math.min(yesScale, 1.8)})`;
 
     // Change text as it shrinks
-    btnNoFloat.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
+    btnNo.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
 
-    // Shrink over 5 clicks then disappear, moving randomly each time
+    // Shrink over 5 clicks then disappear
     if (noCount >= 5) {
-      btnNoFloat.style.opacity = '0';
-      btnNoFloat.style.pointerEvents = 'none';
+      btnNo.style.opacity = '0';
+      btnNo.style.pointerEvents = 'none';
     } else {
       const shrink = 1 - noCount * 0.18;
-
-      // Random position within screen (15-85% of width, 15-60% of height)
-      const randomX = 15 + Math.random() * 70;
-      const randomY = 15 + Math.random() * 45;
-
-      btnNoFloat.style.left = randomX + '%';
-      btnNoFloat.style.top = randomY + '%';
-      btnNoFloat.style.transform = `translate(-50%, -50%) scale(${shrink})`;
-      btnNoFloat.style.opacity = '1';
-      btnNoFloat.style.transition = 'all 0.3s ease';
+      btnNo.style.transform = `scale(${shrink})`;
+      btnNo.style.transition = 'all 0.3s ease';
     }
 
     // Reset countdown timer on interaction
