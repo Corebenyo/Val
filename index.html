@@ -736,15 +736,25 @@
     // Change text as it shrinks
     btnNo.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
 
-    // Shrink over 5 clicks then disappear
+    // Shrink over 5 clicks then disappear, moving randomly each time
     if (noCount >= 5) {
       btnNo.style.transform = 'scale(0)';
       btnNo.style.opacity = '0';
       btnNo.style.pointerEvents = 'none';
     } else {
       const shrink = 1 - noCount * 0.18;
-      btnNo.style.transform = `scale(${shrink})`;
+
+      // Move to random position (using viewport units for iPhone Pro compatibility)
+      // Keep button within safe area: 10% to 80% of viewport
+      const randomX = 10 + Math.random() * 70; // 10vw to 80vw
+      const randomY = 20 + Math.random() * 60; // 20vh to 80vh
+
+      btnNo.style.position = 'fixed';
+      btnNo.style.left = randomX + 'vw';
+      btnNo.style.top = randomY + 'vh';
+      btnNo.style.transform = `translate(-50%, -50%) scale(${shrink})`;
       btnNo.style.opacity = `${shrink}`;
+      btnNo.style.transition = 'all 0.3s ease';
     }
 
     // Reset countdown timer on interaction
