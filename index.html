@@ -752,34 +752,21 @@
 
     // Shrink over 5 clicks then disappear, moving randomly each time
     if (noCount >= 5) {
-      btnNo.style.transform = 'scale(0)';
       btnNo.style.opacity = '0';
       btnNo.style.pointerEvents = 'none';
     } else {
       const shrink = 1 - noCount * 0.18;
 
-      // Move to random position within visible screen area
-      // Use pixel calculation based on actual viewport to stay in bounds
-      const viewW = window.innerWidth;
-      const viewH = window.innerHeight;
-      const btnW = 120; // approximate button width
-      const btnH = 50;  // approximate button height
-
-      // Keep within 15% to 85% of screen, avoiding edges
-      const minX = viewW * 0.15;
-      const maxX = viewW * 0.85 - btnW;
-      const minY = viewH * 0.25;
-      const maxY = viewH * 0.65 - btnH;
-
-      const randomX = minX + Math.random() * (maxX - minX);
-      const randomY = minY + Math.random() * (maxY - minY);
+      // Random position: 20-80% of viewport, centered with translate
+      const randomX = 20 + Math.random() * 60; // percentage
+      const randomY = 30 + Math.random() * 40; // percentage
 
       btnNo.style.position = 'fixed';
-      btnNo.style.left = randomX + 'px';
-      btnNo.style.top = randomY + 'px';
-      btnNo.style.transform = `scale(${shrink})`;
+      btnNo.style.left = randomX + '%';
+      btnNo.style.top = randomY + '%';
+      btnNo.style.transform = `translate(-50%, -50%) scale(${shrink})`;
       btnNo.style.opacity = '1';
-      btnNo.style.transition = 'all 0.3s ease';
+      btnNo.style.transition = 'left 0.3s ease, top 0.3s ease, transform 0.3s ease';
       btnNo.style.zIndex = '9999';
     }
 
