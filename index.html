@@ -339,9 +339,9 @@
     transition: all 0.3s ease;
     z-index: 100;
     -webkit-tap-highlight-color: transparent;
-    position: absolute;
-    left: 65%;
-    top: 58%;
+    position: fixed;
+    touch-action: manipulation;
+    transform-origin: top left;
   }
 
   /* Countdown */
@@ -708,22 +708,38 @@
 
   const noTexts = ["no", "Are you sure?", "Really really sure?", "Think again! 🥺", "Wrong button!", "Pretty please?", "I'll be sad 😢", "Last chance..."];
 
+  // Touch handler for mobile
+  function handleNoTouch(e) {
+    e.preventDefault();
+    sayNo();
+  }
+
   function startAskTimer() {
     noCount = 0;
     countdownVal = 10;
 
     // Reset the no button to initial state
     const btnNo = document.getElementById('btnNo');
-    btnNo.style.position = 'relative';
-    btnNo.style.left = 'auto';
-    btnNo.style.top = 'auto';
     btnNo.style.transform = 'scale(1)';
     btnNo.style.opacity = '1';
     btnNo.style.pointerEvents = 'auto';
     btnNo.textContent = 'no';
 
-    // Reset yes button
-    document.getElementById('btnYes').style.transform = 'scale(1)';
+    // Position below the yes button initially
+    const btnYes = document.getElementById('btnYes');
+    btnYes.style.transform = 'scale(1)';
+
+    // Initial position: centered below yes button area
+    setTimeout(() => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const btnRect = btnNo.getBoundingClientRect();
+      btnNo.style.left = ((vw - btnRect.width) / 2) + 'px';
+      btnNo.style.top = Math.min(vh * 0.65, vh - btnRect.height - 20) + 'px';
+    }, 100);
+
+    // Add touch event listener for mobile
+    btnNo.addEventListener('touchstart', handleNoTouch, { passive: false });
 
     // Start countdown after 15 seconds of inactivity
     askTimer = setTimeout(() => {
@@ -752,20 +768,37 @@
     // Change text as it shrinks
     btnNo.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
 
+    // Force reflow to get accurate dimensions after text change
+    btnNo.offsetWidth;
+
     // Shrink over 5 clicks then disappear, moving randomly each time
     if (noCount >= 5) {
       btnNo.style.opacity = '0';
       btnNo.style.pointerEvents = 'none';
+      btnNo.removeEventListener('touchstart', handleNoTouch);
     } else {
       const shrink = 1 - noCount * 0.15;
 
-      // Random position using percentages (works on any screen size)
-      // Keep within 10-80% horizontally and 15-55% vertically
-      const randomX = 10 + Math.random() * 70;
-      const randomY = 15 + Math.random() * 40;
+      // Get actual viewport and button dimensions
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const btnRect = btnNo.getBoundingClientRect();
 
-      btnNo.style.left = randomX + '%';
-      btnNo.style.top = randomY + '%';
+      // Use unscaled width for positioning (transform-origin is top left)
+      const btnWidth = btnRect.width;
+      const btnHeight = btnRect.height;
+
+      // Define safe margins (20px from edges)
+      const margin = 20;
+      const maxX = vw - btnWidth - margin;
+      const maxY = vh - btnHeight - margin;
+
+      // Random position within safe bounds
+      const randomX = Math.max(margin, Math.random() * maxX);
+      const randomY = Math.max(margin, Math.random() * maxY);
+
+      btnNo.style.left = randomX + 'px';
+      btnNo.style.top = randomY + 'px';
       btnNo.style.transform = `scale(${shrink})`;
       btnNo.style.transition = 'all 0.3s ease';
     }
