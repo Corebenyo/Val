@@ -761,9 +761,9 @@
       const viewW = window.innerWidth;
       const viewH = window.innerHeight;
 
-      // Stay within 10-80% horizontally, 25-55% vertically
-      const randomX = Math.floor(viewW * 0.1 + Math.random() * viewW * 0.7);
-      const randomY = Math.floor(viewH * 0.25 + Math.random() * viewH * 0.3);
+      // Stay within 5-70% horizontally, 20-50% vertically (upper half of screen)
+      const randomX = Math.floor(viewW * 0.05 + Math.random() * viewW * 0.65);
+      const randomY = Math.floor(viewH * 0.20 + Math.random() * viewH * 0.30);
 
       btnNo.style.position = 'fixed';
       btnNo.style.left = randomX + 'px';
