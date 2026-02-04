@@ -337,8 +337,11 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 10;
+    z-index: 100;
     -webkit-tap-highlight-color: transparent;
+    position: absolute;
+    left: 65%;
+    top: 58%;
   }
 
   /* Countdown */
@@ -535,8 +538,8 @@
   <p class="ask-question">Will You Be My Valentine? 💕</p>
   <div class="ask-buttons" id="askButtons">
     <button class="btn-yes" id="btnYes" onclick="sayYes()">YES! 💖</button>
-    <button class="btn-no" id="btnNo" onclick="sayNo()">no</button>
   </div>
+  <button class="btn-no" id="btnNo" onclick="sayNo()">no</button>
   <div class="countdown-container" id="countdown">
     <p class="countdown-text">You have <span id="countdownLabel">10</span> seconds before it's an automatic YES!</p>
     <span class="countdown-number" id="countdownNumber">10</span>
@@ -749,12 +752,20 @@
     // Change text as it shrinks
     btnNo.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
 
-    // Shrink over 5 clicks then disappear
+    // Shrink over 5 clicks then disappear, moving randomly each time
     if (noCount >= 5) {
       btnNo.style.opacity = '0';
       btnNo.style.pointerEvents = 'none';
     } else {
-      const shrink = 1 - noCount * 0.18;
+      const shrink = 1 - noCount * 0.15;
+
+      // Random position using percentages (works on any screen size)
+      // Keep within 10-80% horizontally and 15-55% vertically
+      const randomX = 10 + Math.random() * 70;
+      const randomY = 15 + Math.random() * 40;
+
+      btnNo.style.left = randomX + '%';
+      btnNo.style.top = randomY + '%';
       btnNo.style.transform = `scale(${shrink})`;
       btnNo.style.transition = 'all 0.3s ease';
     }
