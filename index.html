@@ -337,9 +337,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    position: relative;
     z-index: 10;
     -webkit-tap-highlight-color: transparent;
+  }
+  .btn-no-floating {
+    position: absolute;
+    z-index: 100;
   }
 
   /* Countdown */
@@ -538,6 +541,7 @@
     <button class="btn-yes" id="btnYes" onclick="sayYes()">YES! 💖</button>
     <button class="btn-no" id="btnNo" onclick="sayNo()">no</button>
   </div>
+  <button class="btn-no btn-no-floating" id="btnNoFloating" onclick="sayNo()" style="display:none;">no</button>
   <div class="countdown-container" id="countdown">
     <p class="countdown-text">You have <span id="countdownLabel">10</span> seconds before it's an automatic YES!</p>
     <span class="countdown-number" id="countdownNumber">10</span>
@@ -741,34 +745,36 @@
   function sayNo() {
     noCount++;
     const btnNo = document.getElementById('btnNo');
+    const btnNoFloat = document.getElementById('btnNoFloating');
     const btnYes = document.getElementById('btnYes');
 
     // Grow yes button a little each time
     const yesScale = 1 + noCount * 0.1;
     btnYes.style.transform = `scale(${Math.min(yesScale, 1.5)})`;
 
+    // Hide original button, show floating one
+    btnNo.style.display = 'none';
+    btnNoFloat.style.display = 'block';
+
     // Change text as it shrinks
-    btnNo.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
+    btnNoFloat.textContent = noTexts[Math.min(noCount, noTexts.length - 1)];
 
     // Shrink over 5 clicks then disappear, moving randomly each time
     if (noCount >= 5) {
-      btnNo.style.opacity = '0';
-      btnNo.style.pointerEvents = 'none';
+      btnNoFloat.style.opacity = '0';
+      btnNoFloat.style.pointerEvents = 'none';
     } else {
       const shrink = 1 - noCount * 0.18;
 
-      // Random offset from original position using relative positioning
-      // Move within -120px to +120px horizontally and mostly upward (-250px to 0px vertically)
-      const randomX = Math.floor(-120 + Math.random() * 240);
-      const randomY = Math.floor(-250 + Math.random() * 250);
+      // Random position within screen (15-85% of width, 15-60% of height)
+      const randomX = 15 + Math.random() * 70;
+      const randomY = 15 + Math.random() * 45;
 
-      btnNo.style.position = 'relative';
-      btnNo.style.left = randomX + 'px';
-      btnNo.style.top = randomY + 'px';
-      btnNo.style.transform = `scale(${shrink})`;
-      btnNo.style.opacity = '1';
-      btnNo.style.transition = 'all 0.3s ease';
-      btnNo.style.zIndex = '9999';
+      btnNoFloat.style.left = randomX + '%';
+      btnNoFloat.style.top = randomY + '%';
+      btnNoFloat.style.transform = `translate(-50%, -50%) scale(${shrink})`;
+      btnNoFloat.style.opacity = '1';
+      btnNoFloat.style.transition = 'all 0.3s ease';
     }
 
     // Reset countdown timer on interaction
